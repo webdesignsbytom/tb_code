@@ -1,0 +1,35 @@
+.no__highlights {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.triangular__shape {
+  clip-path: polygon(100% 0, 0% 100%, 100% 100%);
+}
+
+.text__stroke {
+  -webkit-text-stroke: 1px #080707;
+  /* -webkit-text-stroke: 1px #f5f5f5; */
+  color: #f0f8ff00;
+}
+
+.text__stroke2 {
+  -webkit-text-stroke: 1px #080707;
+  /* -webkit-text-stroke: 1px #f5f5f5; */
+  color: #4aad37;
+}
+.text__stroke3 {
+  -webkit-text-stroke: 1px #080707;
+  /* -webkit-text-stroke: 1px #f5f5f5; */
+  color: #ffffff;
+}
+.text__stroke4 {
+  -webkit-text-stroke: 1px #080707;
+  /* -webkit-text-stroke: 1px #f5f5f5; */
+  color: #1a7408;
+}
