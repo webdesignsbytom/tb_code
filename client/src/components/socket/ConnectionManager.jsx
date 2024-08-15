@@ -1,21 +1,27 @@
-import React from 'react'
+import React from 'react';
 import { socket } from '../../socket';
+// Constants
+import { BUTTON_SYTLE } from '../../utils/Constants';
 
-function ConnectionManager() {
-    function connect() {
-        socket.connect();
-      }
-    
-      function disconnect() {
-        socket.disconnect();
-      }
-    
-      return (
-        <>
-          <button onClick={ connect }>Connect</button>
-          <button onClick={ disconnect }>Disconnect</button>
-        </>
-      );
+function ConnectionManager({ isConnected }) {
+  function connect() {
+    socket.connect();
+  }
+
+  function disconnect() {
+    socket.disconnect();
+  }
+
+  return (
+    <section className='grid grid-cols-2 w-fit gap-4'>
+      <button className={BUTTON_SYTLE} onClick={connect} disabled={isConnected}>
+        Connect
+      </button>
+      <button className={BUTTON_SYTLE} onClick={disconnect}>
+        Disconnect
+      </button>
+    </section>
+  );
 }
 
-export default ConnectionManager
+export default ConnectionManager;

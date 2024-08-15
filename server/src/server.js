@@ -2,32 +2,24 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
-import { Server } from 'socket.io'
-import path from 'path'
-import { config } from './config.js'
+import { Server } from 'socket.io';
 import http from 'http';
-import { initializeSocket } from './utils/socketManager.js'
-
-// Path
+import path from 'path';
 import { join } from 'path';
 import * as url from 'url';
-// Import routers
-import authRouter from './routes/auth.js';
-import eventRouter from './routes/events.js';
-import userRouter from './routes/users.js';
-import testRouter from './routes/tests.js';
-import editorRouter from './routes/editor.js'
+import { initializeSocket } from './services/socketManager.js';
+import { config } from './config.js';
 
-// Response
-import { sendDataResponse } from './utils/responses.js'
-
+// Initialize Express
 const app = express();
 app.disable('x-powered-by');
 
-// Add middleware
+// Middleware
 app.use(
-  cors({ 
-    origin: "*"
+  cors({
+    origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: true,
   })
 );
 
@@ -35,33 +27,25 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Create HTTP server and integrate Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, config.socketOptions);
 
+// Socket.IO event handling
 initializeSocket(io);
 
-// Set the port and URl
+// Set the port and URL
 const PORT = process.env.PORT || 4000;
-const HTTP_URL = process.env.HTTP_URL || 'http://localhost:';
-
-// Create path to HTML
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
-// Start of actions
-app.use('/', authRouter);
-app.use('/events', eventRouter);
-app.use('/users', userRouter);
-app.use('/tests', testRouter);
-app.use('/api/editor', editorRouter);
-
-// Server interface page
+// Serve static files or HTML
 app.get('/', (req, res) => {
   res.sendFile('index.html', {
     root: join(__dirname, 'views'),
   });
 });
 
-// For all unknown requests 404 page returns
+// 404 handler for unknown routes
 app.all('*', (req, res) => {
   res.status(404);
   if (req.accepts('html')) {
@@ -73,17 +57,13 @@ app.all('*', (req, res) => {
   }
 });
 
+// Global error handler
 app.use((error, req, res, next) => {
-  console.error(error)
-  if (error.code === 'P2025') {
-    return sendDataResponse(res, 404, 'Record does not exist')
-  }
-  return sendDataResponse(res, 500, 'Server error event')
-})
+  console.error(error);
+  res.status(500).json({ message: 'Server error event' });
+});
 
-// Start our API server
-app.listen(PORT, () => {
-  console.log(
-    `\nServer is running on ${HTTP_URL}${PORT} \n This no longer consumes souls\n`
-  );
+// Start the server
+server.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });

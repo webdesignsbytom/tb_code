@@ -70,19 +70,9 @@ function Navbar() {
                 Home
               </Link>
             </li>
-            <li className={activeNav === '/design' ? 'text-gray-600 hover:text-gray-700 active:scale-95' : 'hover:text-gray-700 active:scale-95'}>
-              <Link className='w-full' to='/design'>
-                Design
-              </Link>
-            </li>
-            <li className={activeNav === '/library' ? 'text-gray-600 hover:text-gray-700 active:scale-95' : 'hover:text-gray-700 active:scale-95'}>
-              <Link className='w-full' to='/library'>
-                Library
-              </Link>
-            </li>
-            <li className={activeNav === '/device-configuration' ? 'text-gray-600 hover:text-gray-700 active:scale-95' : 'hover:text-gray-700 active:scale-95'}>
-              <Link className='w-full' to='/device-configuration'>
-                Config
+            <li className={activeNav === '/socket' ? 'text-gray-600 hover:text-gray-700 active:scale-95' : 'hover:text-gray-700 active:scale-95'}>
+              <Link className='w-full' to='/socket'>
+                Socket
               </Link>
             </li>
             {!user.email && (
