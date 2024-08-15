@@ -23,7 +23,7 @@ function RegisterPage() {
             <article className='text-center my-2 '>
               <h1 className='text-3xl font-semibold'>Sign Up Now</h1>
             </article>
-            <RegisterForm />
+            {/* <RegisterForm /> */}
           </section>
         </main>
       </section>
