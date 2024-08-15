@@ -1,21 +1,32 @@
 import React, { useEffect, useRef, useState } from 'react';
+// Components
 import ConnectionManager from '../../components/socket/ConnectionManager';
+// Socket
 import { socket } from '../../socket';
-import { BUTTON_SYTLE } from '../../utils/Constants';
+// Constants
+import {
+  BUTTON_SYTLE,
+  INPUT_SYTLE,
+  MESSAGE_STYLE,
+} from '../../utils/Constants';
+// Functions
+import { getColorForUsername } from '../../utils/Functions';
+import { processMessage } from '../../utils/Cryptography';
 
 function EditorPage() {
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [isTyping, setIsTyping] = useState(false);
   const [message, setMessage] = useState('');
+  const [groupMessages, setGroupMessages] = useState([]);
   const [user, setUser] = useState({
     username: 'Tom',
   });
 
+  console.log('groupMessages', groupMessages);
   const typingTimeoutRef = useRef(null);
 
   useEffect(() => {
     function onConnect() {
-      console.log('CONNECTED >>>>');
       setIsConnected(true);
     }
 
@@ -24,19 +35,26 @@ function EditorPage() {
     }
 
     function onMessageReceive(messageData) {
-      console.log('messageReceive >>>>', messageData.message);
-      // setMessages((prevMessages) => [...prevMessages, messageData]);
+      const newData = messageData.message;
+      console.log('new data', newData);
+
+      let data = {
+        username: newData.hashedUser,
+        message: newData.hashedMessage,
+      };
+
+      console.log('data', data);
+      setGroupMessages((prevMessages) => [...prevMessages, data]);
     }
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
-    socket.on('message-receive', onMessageReceive);  // Listen for incoming messages
-
+    socket.on('message-receive', onMessageReceive); // Listen for incoming messages
 
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
-      socket.off('message-receive', onMessageReceive);  // Listen for incoming messages
+      socket.off('message-receive', onMessageReceive); // Listen for incoming messages
     };
   }, [socket]);
 
@@ -56,13 +74,25 @@ function EditorPage() {
   };
 
   const handleSendMessage = () => {
+    const messageItem = {
+      message: message,
+      username: user.username,
+    }
+
     if (message.trim()) {
-      socket.emit('message-send', { username: user.username, message: message})
+      processMessage(messageItem).then((hashedMessage, hashedUser) => {
+        console.log('Hash computed:', hashedMessage);
+
+        socket.emit('message-send', {
+          username: hashedUser,
+          message: hashedMessage,
+        });
+      });
     }
   };
 
   return (
-    <div className='grid grid-rows-reg w-full min-h-screen h-full'>
+    <div className='grid grid-rows-reg w-full min-h-screen max-h-screen overflow-hidden h-full'>
       <div className='bg-slate-700 flex justify-between text-white py-6 px-4'>
         <div className='grid items-center'>
           <p>Connection State: {isConnected ? 'Connected' : 'Not Connected'}</p>
@@ -70,7 +100,7 @@ function EditorPage() {
         <ConnectionManager isConnected={isConnected} />
       </div>
 
-      <section className='grid grid-rows-reg w-full h-full bg-slate-50'>
+      <section className='grid grid-rows-reg w-full h-full bg-slate-50 overflow-hidden'>
         <div className='grid h-fit gap-2 mx-auto w-1/2 py-4'>
           <form className='grid'>
             <div className='grid gap-2'>
@@ -87,7 +117,7 @@ function EditorPage() {
                 required
                 value={message}
                 onChange={handleMessageChange}
-                className='form-control block w-full px-3 h-fit py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none'
+                className={INPUT_SYTLE}
               />
             </div>
           </form>
@@ -100,8 +130,8 @@ function EditorPage() {
         </div>
 
         {/* Message container */}
-        <section className='grid h-full bg-red-100 py-4'>
-          <div className='grid grid-rows-reg h-full gap-2 mx-auto w-1/2 p-2 bg-white rounded border border-solid border-gray-300 text-gray-700'>
+        <section className='grid h-full py-4 overflow-hidden'>
+          <div className={MESSAGE_STYLE}>
             {/* Your message */}
             {isTyping && (
               <section className='border-gray-300 border-solid border-b-2 pb-2'>
@@ -113,7 +143,22 @@ function EditorPage() {
             )}
             {/* Messages */}
             <section className='grid w-full h-full overflow-hidden'>
-              message
+              <div className='grid h-fit overflow-hidden w-full'>
+                <div className='grid gap-1 h-full overflow-y-auto w-full'>
+                  {groupMessages.length > 0 &&
+                    groupMessages?.map((item, index) => {
+                      const usernameColor = getColorForUsername(item.username);
+
+                      return (
+                        <ChatItem
+                          key={index}
+                          item={item}
+                          colour={usernameColor}
+                        />
+                      );
+                    })}
+                </div>
+              </div>
             </section>
           </div>
         </section>
@@ -121,5 +166,22 @@ function EditorPage() {
     </div>
   );
 }
+
+const ChatItem = ({ item, colour }) => {
+  return (
+    <article className='grid h-fit w-full rounded border border-solid border-gray-300 px-1 py-0.5'>
+      <div className='grid w-full'>
+        <div>
+          <span className='font-medium' style={{ color: colour }}>
+            {item.username}
+          </span>
+        </div>
+        <div>
+          <span>{item.message}</span>
+        </div>
+      </div>
+    </article>
+  );
+};
 
 export default EditorPage;
